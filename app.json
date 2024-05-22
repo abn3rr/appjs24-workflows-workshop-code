@@ -17,7 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.expo.appjs24-workflows-workshop-code"
+      "bundleIdentifier": "com.expo.appjs24-abnerr"
     },
     "android": {
       "adaptiveIcon": {
@@ -40,6 +40,18 @@
     },
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "5fdd3d66-8624-4c9e-b704-c0fa4a1e4616"
+      }
+    },
+    "owner": "abnerr",
+    "updates": {
+      "url": "https://u.expo.dev/5fdd3d66-8624-4c9e-b704-c0fa4a1e4616"
     }
   }
 }
