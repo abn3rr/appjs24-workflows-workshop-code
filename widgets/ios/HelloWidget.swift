@@ -2,52 +2,56 @@
 //  HelloWidget.swift
 //  HelloWidget
 //
-//  Created by Abner Rios on 22/05/24.
+//  Created by Keith on 4/17/24.
 //
 
 import WidgetKit
 import SwiftUI
 
-struct Provider: AppIntentTimelineProvider {
+struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: ConfigurationAppIntent())
+        SimpleEntry(date: Date(), imageData: nil)
     }
 
-    func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> SimpleEntry {
-        SimpleEntry(date: Date(), configuration: configuration)
+    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
+        let entry = SimpleEntry(date: Date(), imageData: nil)
+        completion(entry)
     }
-    
-    func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<SimpleEntry> {
-        var entries: [SimpleEntry] = []
 
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, configuration: configuration)
-            entries.append(entry)
+    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+        guard let groupDir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.appjs24-abnerr") else {
+        fatalError("could not get shared app group directory.")
         }
 
-        return Timeline(entries: entries, policy: .atEnd)
+        let fileUrl = groupDir.appendingPathComponent("latest_share.jpg")
+        do {
+            let imageData = try Data(contentsOf: fileUrl)
+            let entry = SimpleEntry(date: Date(), imageData: imageData)
+            // Some other stuff to make the widget update...
+            let timeline = Timeline(entries: [entry], policy: .atEnd)
+            completion(timeline)
+        } catch {
+            let entry = SimpleEntry(date: Date(), imageData: nil)
+            let timeline = Timeline(entries: [entry], policy: .atEnd)
+            completion(timeline)
+        }
     }
 }
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
-    let configuration: ConfigurationAppIntent
+    let imageData: Data?
 }
 
 struct HelloWidgetEntryView : View {
     var entry: Provider.Entry
 
     var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
-
-            Text("Favorite Emoji:")
-            Text(entry.configuration.favoriteEmoji)
-        }
+      Image(uiImage: UIImage(data: entry.imageData!)!)
+            .resizable()
+            .scaledToFill()
+            .frame(width: 100, height:100)
+            .cornerRadius(10)
     }
 }
 
@@ -55,30 +59,23 @@ struct HelloWidget: Widget {
     let kind: String = "HelloWidget"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: kind, intent: ConfigurationAppIntent.self, provider: Provider()) { entry in
-            HelloWidgetEntryView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+        StaticConfiguration(kind: kind, provider: Provider()) { entry in
+            if #available(iOS 17.0, *) {
+                HelloWidgetEntryView(entry: entry)
+                    .containerBackground(.fill.tertiary, for: .widget)
+            } else {
+                HelloWidgetEntryView(entry: entry)
+                    .padding()
+                    .background()
+            }
         }
-    }
-}
-
-extension ConfigurationAppIntent {
-    fileprivate static var smiley: ConfigurationAppIntent {
-        let intent = ConfigurationAppIntent()
-        intent.favoriteEmoji = "😀"
-        return intent
-    }
-    
-    fileprivate static var starEyes: ConfigurationAppIntent {
-        let intent = ConfigurationAppIntent()
-        intent.favoriteEmoji = "🤩"
-        return intent
+        .configurationDisplayName("My Widget")
+        .description("This is an example widget.")
     }
 }
 
 #Preview(as: .systemSmall) {
     HelloWidget()
 } timeline: {
-    SimpleEntry(date: .now, configuration: .smiley)
-    SimpleEntry(date: .now, configuration: .starEyes)
+    SimpleEntry(date: .now, imageData: nil)
 }

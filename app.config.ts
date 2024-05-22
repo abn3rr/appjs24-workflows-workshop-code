@@ -68,6 +68,9 @@ module.exports = ({ config } : { config: ExpoConfig }) => {
       "experiments": {
         "typedRoutes": true
       },
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.appjs24-abnerr"]
+      },
       "runtimeVersion": {
         "policy": "appVersion"
       },

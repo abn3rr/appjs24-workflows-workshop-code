@@ -11,6 +11,7 @@ import Marker, {
   TextBackgroundType,
   ImageFormat,
 } from "react-native-image-marker";
+import { saveLatestShare, updateWidget } from "@/widgets/common/widget-share";
 
 
 function normalizeFilePath(path: string) {
@@ -30,7 +31,9 @@ export default function ShareWork() {
   );
 
   async function share() {
-    await Sharing.shareAsync(editedImagePath);
+    await saveLatestShare(editedImagePath);
+    await updateWidget();
+    await Sharing.shareAsync(editedImagePath!);
   }
 
   async function crop() {
