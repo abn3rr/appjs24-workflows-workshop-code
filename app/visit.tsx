@@ -1,10 +1,24 @@
+import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Platform, ScrollView, View, Text } from "react-native";
+import { Platform, ScrollView, View, Text, Pressable, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Updates from "expo-updates";
+import * as Application from "expo-application";
+
 
 export default function VisitScreen() {
+  const updateInfo = Updates.useUpdates();
+
+    useEffect(() => {
+    (async function runAsync() {
+      const status = await Updates.checkForUpdateAsync();
+      if (status.isAvailable) {
+        await Updates.fetchUpdateAsync();
+      }
+    })();
+  }, []);
   const insets = useSafeAreaInsets();
 
   return (
@@ -47,6 +61,35 @@ export default function VisitScreen() {
             source={require("@/assets/images/map.png")}
             contentFit="contain"
           />
+        </View>
+        <View className="row-y-2 items-center my-10 mx-10">
+          <Text className="text-l font-bold">Version</Text>
+          <Text className="text-l">
+            {Application.nativeApplicationVersion}-{Application.nativeBuildVersion}
+          </Text>
+          <Text className="text-l">{Updates.updateId || "n/a"}</Text>
+          {updateInfo.isChecking || updateInfo.isDownloading ? (
+            <ActivityIndicator size="small" />
+          ) : null}
+          {updateInfo.isUpdateAvailable && updateInfo.isUpdatePending ? (
+            <Pressable
+              onPress={() => {
+                Updates.reloadAsync();
+              }}
+            >
+              <Text className="text-xl my-2 text-tint">Update your app</Text>
+            </Pressable>
+          ) : null}
+          {updateInfo.downloadError ? (
+            <>
+              <Text className="text-l my-2 text-center">
+                There's an update available for your app, but the download failed.
+              </Text>
+              <Text className="text-l my-2 text-center">
+                {updateInfo.downloadError?.message}
+              </Text>
+            </>
+          ) : null}
         </View>
       </ScrollView>
       {/* Use a light status bar on iOS to account for the black space above the modal */}

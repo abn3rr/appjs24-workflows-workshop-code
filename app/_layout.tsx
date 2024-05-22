@@ -9,6 +9,8 @@ import { View, FlatList, ScrollView } from "react-native";
 import { cssInterop, remapProps } from "nativewind";
 import "../global.css";
 import "react-native-reanimated";
+import * as QuickActions from "expo-quick-actions";
+import { useQuickActionRouting, RouterAction } from "expo-quick-actions/router";
 
 // component interops for nativewind - just need these once
 cssInterop(Image, { className: "style" });
@@ -62,6 +64,20 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const queryClient = new QueryClient();
+
+  useQuickActionRouting();
+
+  useEffect(() => {
+    QuickActions.setItems<RouterAction>([
+      {
+        "title": "Favorites",
+        "subtitle": "Your must-see exhibits",
+        icon: "fav_icon",
+        id: "1",
+        params: { href: "/two" },
+      },
+    ]);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -75,7 +75,7 @@ export default function DisplayWork() {
                   size={28}
                 />
               </Pressable>
-              <Link push href={`/works/${id}/share`} onPress={() => share}>
+              <Link push href={`/works/${id}/share`}>
                 <Icon name="share-alt" color={colors.tint} size={28} />
               </Link>
             </View>
